@@ -1,0 +1,32 @@
+pip install pandas nltk vaderSentiment textblob
+import pandas as pd
+import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from textblob import TextBlob
+
+nltk.download("vader_lexicon")
+analyzer= SentimentIntensityAnalyzer()
+
+#load dataset
+df= pd.read_csv(r"C:\Users\radha\Downloads\amazon.csv.zip")
+print(df.shape)
+df.head(25)
+#function to analyze sentiment
+def analyze_sentiment(text):
+    if isinstance(text,str):
+        sentiment_score= analyzer.polarity_scores(text)["compound"]
+        blob_score=TextBlob(text).sentiment.polarity
+        if sentiment_score >=0.05:
+            label="positive"
+        elif sentiment_score <=-0.05:
+            label="negative"
+        else:
+            label="neutral"
+        return pd.Series([sentiment_score,blob_score,label])
+    else:
+        return pd.Series([0,0,"neutral"])
+df[['VADER_Score', 'TextBlob_Score', 'label']] = df['review_title'].apply(analyze_sentiment)
+
+# Save processed data
+df.to_csv("processed_reviews.csv", index=False)
+print("Sentiment analysis completed. Data saved.")
